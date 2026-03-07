@@ -1,0 +1,25 @@
+Implementation of Monitoring using Prometheus and Grafana
+To monitor the deployed Super Mario application running on the Amazon EKS cluster, Prometheus and Grafana were integrated into the Kubernetes environment.
+First, a dedicated namespace called monitoring was created in the Kubernetes cluster to isolate monitoring components.
+kubectl create namespace monitoring
+Next, Helm repositories for Prometheus and Grafana were added to install the monitoring tools using Helm charts.
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+Prometheus was then installed in the cluster using Helm. Prometheus collects metrics from Kubernetes nodes and pods using Node Exporter and Kubernetes service discovery.
+helm install prometheus prometheus-community/prometheus -n monitoring
+This installation deploys several components including:
+Prometheus server for metrics collection
+Node Exporter for node level metrics
+Alertmanager for alert handling
+kube-state-metrics for Kubernetes resource metrics
+After that, Grafana was installed to visualize the collected metrics.
+helm install grafana grafana/grafana -n monitoring
+Grafana was configured to use Prometheus as a data source. This allows Grafana to query metrics collected by Prometheus and display them in dashboards.
+To access the Grafana dashboard externally, the Grafana service was exposed using a NodePort service.
+kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-service -n monitoring
+The NodePort assigned by Kubernetes allows access to the Grafana web interface through the EC2 public IP and the NodePort.
+After logging into Grafana, Prometheus was added as a data source using the following service endpoint:
+http://prometheus-server.monitoring.svc.cluster.local
+Finally, Grafana dashboards were imported to visualize Kubernetes metrics such as CPU usage, memory usage, disk utilization, network I/O, and pod level metrics. These dashboards provide real time monitoring of the Super Mario application running in the Kubernetes cluster.
+This setup enables centralized monitoring of the Kubernetes infrastructure and the deployed application, helping track performance and resource utilization effectively.
